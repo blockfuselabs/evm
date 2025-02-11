@@ -1,7 +1,15 @@
 package types
 
-type typeName struct {
-fieldOne string
-fieldTwo  string
+const (
+	MaximumDepth uint = 1024
+)
+
+type Byte32 [32]byte
+type Uint256 [4]uint64
+
+type Stack struct {
+	Data []Uint256
 }
+
+
 
