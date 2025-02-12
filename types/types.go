@@ -11,5 +11,9 @@ type Stack struct {
 	Data []Uint256
 }
 
+type Memory struct{
+	Data []Byte32
+
+}
 
 
