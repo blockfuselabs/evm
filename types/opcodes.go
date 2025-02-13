@@ -2,20 +2,20 @@ package types
 
 const(
 	// STOP
-    STOP byte = 0x0;
+    STOP byte = 0x00;
     
     // MATH
-    ADD byte = 0x1;
-    MUL byte = 0x2;
-    SUB byte = 0x3;
-    DIV byte = 0x4;
-    SDIV byte = 0x5;
-    MOD byte = 0x6;
-    SMOD byte = 0x7;
-    ADDMOD byte = 0x8;
-    MULMOD byte = 0x9;
-    EXP byte = 0xA;
-    SIGNEXTEND byte = 0xB;
+    ADD byte = 0x01;
+    MUL byte = 0x02;
+    SUB byte = 0x03;
+    DIV byte = 0x04;
+    SDIV byte = 0x05;
+    MOD byte = 0x06;
+    SMOD byte = 0x07;
+    ADDMOD byte = 0x08;
+    MULMOD byte = 0x09;
+    EXP byte = 0x0A;
+    SIGNEXTEND byte = 0x0B;
 
     // COMPARISONS
     LT byte = 0x10;
@@ -179,5 +179,6 @@ const(
     REVERT byte = 0xFD;
     INVALID byte = 0xFE;
     SELFDESTRUCT byte = 0xFF;
-
 )
+
+

@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (s *Stack) Push(data int64) {
+func (s *Stack) Push(data byte) {
 	if len(s.Data) >= int(MaximumDepth) {
 		panic("stack overflow")
 	}
@@ -12,7 +12,7 @@ func (s *Stack) Push(data int64) {
 	s.Data = append(s.Data, data)
 }
 
-func (s *Stack) Pop() int64 {
+func (s *Stack) Pop() byte {
 	lastIndex := len(s.Data) - 1
 	lastItem := s.Data[lastIndex]
 	fmt.Println("popped: ", lastItem)
@@ -58,63 +58,124 @@ func (s *Storage) Load(key Byte32) (Byte32, error) {
 // ---------------------------------------------------------
 // ------------------- Operations --------------------------
 // ---------------------------------------------------------
-func (es *State) Add() {
-	a := es.Stack.Pop()
-	b := es.Stack.Pop()
+func (evm *State) Add() {
+	a := evm.Stack.Pop()
+	b := evm.Stack.Pop()
 
+	fmt.Println("adding...", a, "+", b)
 	result := a + b
-	es.Stack.Push(result)
+	evm.Stack.Push(result)
+	evm.GasDec(3)
 }
 
-func (es *State) Sub() {
-	a := es.Stack.Pop()
-	b := es.Stack.Pop()
+func (evm *State) Sub() {
+	a := evm.Stack.Pop()
+	b := evm.Stack.Pop()
 
 	result := a - b
-	es.Stack.Push(result)
+	evm.Stack.Push(result)
 }
 
-func (es *State) Mul() {
-	a := es.Stack.Pop()
-	b := es.Stack.Pop()
+func (evm *State) Mul() {
+	a := evm.Stack.Pop()
+	b := evm.Stack.Pop()
 
 	result := a * b
-	es.Stack.Push(result)
+	evm.Stack.Push(result)
 }
 
-func (es *State) Div() {
-	a := es.Stack.Pop()
-	b := es.Stack.Pop()
+func (evm *State) Div() {
+	a := evm.Stack.Pop()
+	b := evm.Stack.Pop()
 
 	// handle division by 0
-	if b == 0 {es.Stack.Push(0); return}
+	if b == 0 {evm.Stack.Push(0); return}
 
 	result := a / b
-	es.Stack.Push(result)
+	evm.Stack.Push(result)
 }
 
 // ---------------------------------------------------------
-func (state *State) Peek() uint8 {
-	return state.Program[state.Pc]
+func (evm *State) Peek() uint8 {
+	return evm.Program[evm.Pc]
 }
 
-func (state *State) Gas_Dec(amount uint64) {
-	if state.Gas < amount {
+func (evm *State) GasDec(amount uint64) {
+	if evm.Gas < amount {
 		panic("Insufficient Gas for execution")
 	} else {
-		state.Gas -= amount
+		evm.Gas -= amount
 	}
 }
 
-func (state *State) Stop() {
-	state.Stop_flag = true
+func (evm *State) Stop() {
+	evm.StopFlag = true
 }
 
-// ------------------- ConGasstructor Methods -----------------
+func (evm *State) ExecuteOpcode() bool {
+	// stop opcode execution if stopflag or revertFlag is true
+	if evm.StopFlag || evm.RevertFlag { 
+		fmt.Print("reached Stop case")
+		return false 
+	}
+
+	// stop opcode execution if stopflag or revertFlag is true
+	if evm.Pc >= uint8(len(evm.Program)) { 
+		fmt.Print("reached End of Bytecode")
+		return false 
+	}
+
+	return true
+}
+
+func (evm *State) Reset() {
+	evm.Pc = 0
+	evm.Stack = *NewStack()
+	evm.Memory = *NewMemory()
+	evm.Storage = *NewStorage()
+}
+
+func (evm *State) Run() {
+	for evm.ExecuteOpcode() {
+		var op byte;
+		op = evm.Program[evm.Pc]
+		nextOp := evm.Program[evm.Pc + 1]
+
+		fmt.Printf("Current item at pc %v\n %T", op, op)
+		fmt.Println(ADD, PUSH1, STOP)
+		// fmt.Printf("next item at pc + 1 %v\n", nextOp)
+
+		switch op {
+		case ADD:
+			fmt.Println("opcode before exec", op)
+			evm.Add()
+			evm.Pc++
+			fmt.Println("opcode after exec", op)
+			return
+		case PUSH1:
+			fmt.Println("opcode before exec", op)
+			evm.Stack.Push(nextOp)
+			evm.Pc += 2
+			return
+		case STOP:
+			fmt.Println("opcode before exec", op)
+			evm.Stop()
+			evm.Pc++
+			return
+		default:
+			fmt.Println("invalid opcode", op)
+		}
+
+		// fmt.Println(evm.ExecuteOpcode())
+	}
+}
+
+// ---------------------------------------------------------
+// ------------------- Constructor Methods -----------------
 // ---------------------------------------------------------
 func NewStack() *Stack {
 	return &Stack{
-		Data: make([]int64, 0),
+		Data: make([]byte, 0),
 	}
 }
 
@@ -137,8 +198,8 @@ func NewEvmState(sender string, program []byte, gas uint64, value uint64, callda
 		Gas: gas,
 		Value: value,
 		Calldata: calldata,
-		Stop_flag: false,
-		Revert_flag: false,
+		StopFlag: false,
+		RevertFlag: false,
 		Returndata: make([]uint8, 0),
 		Logs: make([]string, 0),
 	}

@@ -3,12 +3,16 @@ package main
 import (
 	// "fmt"
 
+	"fmt"
+
 	"github.com/blockfuselabs/evm/types"
 )
 
 func main() {
 	// s := types.NewStack()
-	es := types.NewEvmState("1111", "1111", 1000, 100, []uint8{})
+	es := types.NewEvmState("1111", []byte{0x60, 0x03, 0x60, 0x01, 0x01, 0x00}, 1000, 100, []uint8{})
+	es.Run()
+	fmt.Println(es.Gas, es.Stack.Data)
 	// m := types.NewMemory()
 	// s.Data = append(s.Data, types.Byte32{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1})
 	// s.Data = append(s.Data, types.Byte32{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1})
@@ -17,9 +21,9 @@ func main() {
 	// 	s.Push(types.Uint256{1})
 	// }
 
-	es.Stack.Push(3)
-	es.Stack.Push(8)
-	es.Div()
+	// es.Stack.Push(3)
+	// es.Stack.Push(8)
+	// es.Div()
 	// fmt.Println(s.Data)
 	// var offset96 byte = 0x60
 	// var offset32 byte = 0x20

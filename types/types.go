@@ -8,7 +8,7 @@ type Byte32 [32]byte
 type Uint256 [4]uint64
 
 type Stack struct {
-	Data []int64
+	Data []byte
 }
 
 type Memory struct {
@@ -28,8 +28,8 @@ type State struct {
 	Gas uint64
 	Value uint64
 	Calldata []uint8
-	Stop_flag bool
-	Revert_flag bool
+	StopFlag bool
+	RevertFlag bool
 	Returndata []uint8
 	Logs []string
 }
