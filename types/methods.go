@@ -67,3 +67,21 @@ func NewMemory() *Memory {
 func NewStorage() *Storage {
 	return &Storage{make(map[Byte32]Byte32, 0)}
 }
+
+func NewEvmState(sender string, program string, gas uint64, value uint64, calldata []uint8) *State {
+	return &State{
+		Pc: 0,
+		Stack: *NewStack(),
+		Memory: *NewMemory(),
+		Storage: *NewStorage(),
+		Sender: sender,
+		Program: program,
+		Gas: gas,
+		Value: value,
+		Calldata: calldata,
+		Stop_flag: false,
+		Revert_flag: false,
+		Returndata: make([]uint8, 0),
+		Logs: make([]string, 0),
+	}
+}
