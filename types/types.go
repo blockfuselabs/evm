@@ -1,7 +1,5 @@
 package types
 
-import "strings"
-
 const (
 	MaximumDepth uint = 1024
 )
@@ -10,7 +8,7 @@ type Byte32 [32]byte
 type Uint256 [4]uint64
 
 type Stack struct {
-	Data []Uint256
+	Data []int64
 }
 
 type Memory struct {
