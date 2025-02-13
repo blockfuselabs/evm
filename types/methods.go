@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (s *Stack) Push(data Uint256) {
+func (s *Stack) Push(data int64) {
 	if len(s.Data) >= int(MaximumDepth) {
 		panic("stack overflow")
 	}
@@ -12,10 +12,13 @@ func (s *Stack) Push(data Uint256) {
 	s.Data = append(s.Data, data)
 }
 
-func (s *Stack) Pop() {
+func (s *Stack) Pop() int64 {
 	lastIndex := len(s.Data) - 1
-	fmt.Println("popped: ", s.Data[lastIndex])
+	lastItem := s.Data[lastIndex]
+	fmt.Println("popped: ", lastItem)
 	s.Data = append(s.Data[:lastIndex], s.Data[lastIndex+1:]...)
+
+	return lastItem
 }
 
 func (m *Memory) Store(offset byte, value Byte32) {
@@ -32,7 +35,7 @@ func (m *Memory) Store(offset byte, value Byte32) {
 
 func (m *Memory) Load(offset byte) Byte32 {
 	index := int(offset) / 32
-	// fmt.Println(index > len(m.Data)-1)
+
 	if index > len(m.Data)-1 {
 		panic("invalid memory location")
 	}
@@ -43,15 +46,54 @@ func (s *Storage) Store(key Byte32, value Byte32) {
 	s.Data[key] = value
 }
 
-func (s *Storage) Load(key Byte32) Byte32 {
+func (s *Storage) Load(key Byte32) (Byte32, error) {
 	data, err := s.Data[key]
 	if !err {
-		panic("Data not found")
+		return Byte32{}, fmt.Errorf("Error: invalid storage key")
 	}
-	return data
 
+	return data, nil
 }
 
+// ---------------------------------------------------------
+// ------------------- Operations --------------------------
+// ---------------------------------------------------------
+func (es *State) Add() {
+	a := es.Stack.Pop()
+	b := es.Stack.Pop()
+
+	result := a + b
+	es.Stack.Push(result)
+}
+
+func (es *State) Sub() {
+	a := es.Stack.Pop()
+	b := es.Stack.Pop()
+
+	result := a - b
+	es.Stack.Push(result)
+}
+
+func (es *State) Mul() {
+	a := es.Stack.Pop()
+	b := es.Stack.Pop()
+
+	result := a * b
+	es.Stack.Push(result)
+}
+
+func (es *State) Div() {
+	a := es.Stack.Pop()
+	b := es.Stack.Pop()
+
+	// handle division by 0
+	if b == 0 {es.Stack.Push(0); return}
+
+	result := a / b
+	es.Stack.Push(result)
+}
+
+// ---------------------------------------------------------
 func (state *State) Peek() uint8 {
 	return state.Program[state.Pc]
 }
@@ -69,10 +111,10 @@ func (state *State) Stop() {
 }
 
 // ------------------- ConGasstructor Methods -----------------
-
+// ---------------------------------------------------------
 func NewStack() *Stack {
 	return &Stack{
-		Data: make([]Uint256, 0),
+		Data: make([]int64, 0),
 	}
 }
 
