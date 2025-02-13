@@ -64,8 +64,12 @@ func (evm *State) Add() {
 
 	fmt.Println("adding...", a, "+", b)
 	result := a + b
-	evm.Stack.Push(result)
+
+	evm.Stack.Push(byte(result))
+
+	fmt.Printf("EVM STACK: %v\n", evm.Stack.Data[0])
 	evm.GasDec(3)
+	fmt.Printf("EVM Gas used for ADD Op: [%d]GAS, remaining %d\n", 3, evm.Gas)
 }
 
 func (evm *State) Sub() {
@@ -89,7 +93,10 @@ func (evm *State) Div() {
 	b := evm.Stack.Pop()
 
 	// handle division by 0
-	if b == 0 {evm.Stack.Push(0); return}
+	if b == 0 {
+		evm.Stack.Push(0)
+		return
+	}
 
 	result := a / b
 	evm.Stack.Push(result)
@@ -114,15 +121,13 @@ func (evm *State) Stop() {
 
 func (evm *State) ExecuteOpcode() bool {
 	// stop opcode execution if stopflag or revertFlag is true
-	if evm.StopFlag || evm.RevertFlag { 
-		fmt.Print("reached Stop case")
-		return false 
+	if evm.StopFlag || evm.RevertFlag {
+		return false
 	}
 
 	// stop opcode execution if stopflag or revertFlag is true
-	if evm.Pc >= uint8(len(evm.Program)) { 
-		fmt.Print("reached End of Bytecode")
-		return false 
+	if evm.Pc >= uint8(len(evm.Program)) {
+		return false
 	}
 
 	return true
@@ -137,36 +142,23 @@ func (evm *State) Reset() {
 
 func (evm *State) Run() {
 	for evm.ExecuteOpcode() {
-		var op byte;
-		op = evm.Program[evm.Pc]
-		nextOp := evm.Program[evm.Pc + 1]
-
-		fmt.Printf("Current item at pc %v\n %T", op, op)
-		fmt.Println(ADD, PUSH1, STOP)
-		// fmt.Printf("next item at pc + 1 %v\n", nextOp)
-
+		op := evm.Program[evm.Pc]
 		switch op {
 		case ADD:
-			fmt.Println("opcode before exec", op)
 			evm.Add()
 			evm.Pc++
-			fmt.Println("opcode after exec", op)
-			return
+			continue
 		case PUSH1:
-			fmt.Println("opcode before exec", op)
+			nextOp := evm.Program[evm.Pc+1]
 			evm.Stack.Push(nextOp)
 			evm.Pc += 2
-			return
+			continue
 		case STOP:
-			fmt.Println("opcode before exec", op)
 			evm.Stop()
-			evm.Pc++
-			return
+			break
 		default:
 			fmt.Println("invalid opcode", op)
 		}
-
-		// fmt.Println(evm.ExecuteOpcode())
 	}
 }
 
@@ -189,18 +181,18 @@ func NewStorage() *Storage {
 
 func NewEvmState(sender string, program []byte, gas uint64, value uint64, calldata []uint8) *State {
 	return &State{
-		Pc: 0,
-		Stack: *NewStack(),
-		Memory: *NewMemory(),
-		Storage: *NewStorage(),
-		Sender: sender,
-		Program: program,
-		Gas: gas,
-		Value: value,
-		Calldata: calldata,
-		StopFlag: false,
+		Pc:         0,
+		Stack:      *NewStack(),
+		Memory:     *NewMemory(),
+		Storage:    *NewStorage(),
+		Sender:     sender,
+		Program:    program,
+		Gas:        gas,
+		Value:      value,
+		Calldata:   calldata,
+		StopFlag:   false,
 		RevertFlag: false,
 		Returndata: make([]uint8, 0),
-		Logs: make([]string, 0),
+		Logs:       make([]string, 0),
 	}
 }
