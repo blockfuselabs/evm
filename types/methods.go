@@ -84,7 +84,7 @@ func NewStorage() *Storage {
 	return &Storage{make(map[Byte32]Byte32, 0)}
 }
 
-func NewEvmState(sender string, program string, gas uint64, value uint64, calldata []uint8) *State {
+func NewEvmState(sender string, program []byte, gas uint64, value uint64, calldata []uint8) *State {
 	return &State{
 		Pc: 0,
 		Stack: *NewStack(),

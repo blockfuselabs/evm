@@ -1,7 +1,5 @@
 package types
 
-import "strings"
-
 const (
 	MaximumDepth uint = 1024
 )
@@ -26,7 +24,7 @@ type State struct {
 	Memory Memory
 	Storage Storage
 	Sender string
-	Program []uint8
+	Program []byte
 	Gas uint64
 	Value uint64
 	Calldata []uint8
