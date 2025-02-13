@@ -52,7 +52,23 @@ func (s *Storage) Load(key Byte32) Byte32 {
 
 }
 
-// ------------------- Constructor Methods -----------------
+func (state *State) Peek() uint8 {
+	return state.Program[state.Pc]
+}
+
+func (state *State) Gas_Dec(amount uint64) {
+	if state.Gas < amount {
+		panic("Insufficient Gas for execution")
+	} else {
+		state.Gas -= amount
+	}
+}
+
+func (state *State) Stop() {
+	state.Stop_flag = true
+}
+
+// ------------------- ConGasstructor Methods -----------------
 
 func NewStack() *Stack {
 	return &Stack{

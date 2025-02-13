@@ -26,7 +26,7 @@ type State struct {
 	Memory Memory
 	Storage Storage
 	Sender string
-	Program string
+	Program []uint8
 	Gas uint64
 	Value uint64
 	Calldata []uint8
