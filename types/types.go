@@ -11,9 +11,9 @@ type Stack struct {
 	Data []Uint256
 }
 
-type Memory struct{
+type Memory struct {
 	Data []Byte32
-
 }
-
-
+type Storage struct {
+	Data map[Byte32]Byte32
+}
