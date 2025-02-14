@@ -1,121 +1,232 @@
-<a name="readme-top"></a>
+# MiniEVM - Lightweight Ethereum Virtual Machine Implementation
 
-# 📗 Table of Contents
+[![Go Report Card](https://goreportcard.com/badge/github.com/blockfuselabs/evm)](https://goreportcard.com/report/github.com/blockfuselabs/evm)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GoDoc](https://godoc.org/github.com/blockfuselabs/evm?status.svg)](https://godoc.org/github.com/blockfuselabs/evm)
 
-- [EVM](#EVM)
-  - [Getting Started](#getting-started)
-- [📗 Table of Contents](#-table-of-contents)
-  - [🛠 Built With ](#-built-with-)
-    - [Tech Stack ](#tech-stack-)
-    - [Key Features ](#key-features-)
-  - [💻 Getting Started ](#-getting-started-)
-    - [Prerequisites](#prerequisites)
-    - [Setup](#setup)
-    - [Install](#install)
-    - [Usage](#usage)
-  - [👥 Authors ](#-authors-)
-  - [🔭 Future Features ](#-future-features-)
-  - [🤝 Contributing ](#-contributing-)
-  - [⭐️ Show your support ](#️-show-your-support-)
-  - [🙏 Acknowledgments ](#-acknowledgments-)
-  - [📝 License ](#-license-)
+## 📖 Overview
 
-# 📖 [EVM] <a name="about-project"></a>
+MiniEVM is a lightweight implementation of the Ethereum Virtual Machine (EVM) written in Go. It provides a minimal, yet functional environment for executing EVM bytecode, making it ideal for educational purposes, testing, and research. While not intended for production use, it implements core EVM features including stack operations, memory management, and gas metering.
 
+## 📗 Table of Contents
 
-**[EVM]** The MiniEVM is a lightweight implementation of the Ethereum Virtual Machine, designed to execute a subset of Ethereum’s opcodes. It serves as an educational and experimental project, providing insight into EVM execution, stack management, and gas metering. While it supports fundamental opcodes like arithmetic, logical, and storage operations, it is not intended for production use.
+- [📖 Overview](#-overview)
+- [✨ Features](#-features)
+- [🏗️ Architecture](#️-architecture)
+- [🚀 Installation](#-installation)
+- [💻 Usage](#-usage)
+- [📂 Project Structure](#-project-structure)
+- [🔍 Implementation Details](#-implementation-details)
+- [⛽ Gas Costs](#-gas-costs)
+- [🤝 Contributing](#-contributing)
+- [🛣️ Roadmap](#️-roadmap)
+- [📄 License](#-license)
 
-This project is ideal for developers and researchers looking to understand EVM internals without the complexity of a full Ethereum client.
-## 🛠 Built With <a name="built-with"></a>
+## ✨ Features
 
-### Tech Stack <a name="tech-stack"></a>
+### Current Features
+* Basic EVM execution environment
+* Stack-based operation handling (push/pop)
+* Memory management
+* Storage operations
+* Gas metering and management
+* Basic arithmetic operations (ADD, SUB, MUL, DIV)
+* Program counter management
+* State management and execution flow control
 
+### Planned Features
+* Complete implementation of all EVM opcodes
+* Contract creation and deployment
+* Event logging system
+* Memory expansion and gas calculation
+* Advanced arithmetic operations (ADDMOD, MULMOD, EXP)
+* Bitwise operations
+* Jump operations with proper validation
+* Exception handling mechanisms
+* Contract calling mechanisms (CALL, DELEGATECALL, STATICCALL)
+* State reverting capabilities
+* SHA3 hashing operations
+* Block information access
+* Extended testing framework
 
-<details>
-<summary>Stack</summary>
-  <ul>
-    <li><a href="#">Golang</a></li>
-  </ul>
-</details>
+## 🏗️ Architecture
 
-<details>
+The MiniEVM is built with a modular architecture consisting of several key components:
 
-### Key Features <a name="key-features"></a>
+### Core Components
 
-- **Create user**
-- **Upload Ad content**
-- **Admin role**
+1. **State Management (`state.go`)**
+   * Maintains execution context
+   * Handles program counter
+   * Manages gas consumption
+   * Controls execution flow
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+2. **Stack (`types.go`)**
+   * Implementation: `Stack` struct
+   * Maximum depth: 1024 items
+   * Basic operations: Push, Pop
+   * Stack overflow protection
 
+3. **Memory (`types.go`)**
+   * Dynamic memory model
+   * 32-byte word alignment
+   * Automatic expansion
+   * Bounds checking
 
-## 💻 Getting Started <a name="getting-started"></a>
+4. **Storage (`types.go`)**
+   * Key-value storage model
+   * Persistent state storage
+   * 32-byte keys and values
 
-To get a local copy up and running, follow these steps.
+5. **Operation Codes (`opcodes.go`)**
+   * Complete EVM opcode definitions
+   * Grouped by functionality
+   * Includes gas costs
 
-### Prerequisites
+## 🚀 Installation
 
-In order to run this project you need:
+```bash
+# Clone the repository
+git clone https://github.com/blockfuselabs/evm.git
 
-```sh
- gem install rails
- setup PostgreSql
- Visual Studio Code
+# Change to project directory
+cd evm
+
+# Install dependencies
+go mod download
+
+# Build the project
+go build ./cmd/cli
 ```
 
-### Setup
+## 💻 Usage
 
-Clone this repository to your desired folder:
+### Basic Example
 
-```sh
-  cd my-folder
-  git clone https://github.com/shaaibu7/Advertise-X.git
-  cd Blog-app
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/blockfuselabs/evm/types"
+)
+
+func main() {
+    // Create new EVM instance with initial parameters
+    evm := types.NewEvmState(
+        "0x1234...", // sender address
+        []byte{0x60, 0x03, 0x60, 0x02, 0x01, 0x00}, // bytecode
+        1000,        // gas limit
+        100,        // value
+        []uint8{},  // calldata
+    )
+
+    // Execute the bytecode
+    evm.Run()
+
+    // Print results
+    fmt.Printf("Remaining Gas: %d\nStack: %v\n", evm.Gas, evm.Stack.Data)
+}
 ```
 
-### Usage
+### Advanced Usage
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+```go
+// Example of executing custom bytecode
+bytecode := []byte{
+    types.PUSH1, 0x03, // Push 3 onto stack
+    types.PUSH1, 0x02, // Push 2 onto stack
+    types.ADD,         // Add top two stack items
+    types.STOP,        // Stop execution
+}
 
-## 👥 Authors <a name="authors"></a>
+evm := types.NewEvmState("sender", bytecode, 1000, 0, nil)
+evm.Run()
+```
 
-👤 **Shaaibu Suleiman**
+## 📂 Project Structure
 
-- GitHub: [@githubhandle](https://github.com/shaaibu7)
-- Twitter: [@twitterhandle](https://twitter.com/SuleimanShaaibu?t=EAqVJrP59poEb2W46kK9vg&s=09)
-- LinkedIn: [LinkedIn](https://www.linkedin.com/in/shaaibu-suleiman-119271206)
+```
+evm/
+├── bin/                    # Compiled binaries
+├── cmd/
+│   └── cli/
+│       └── main.go        # CLI entry point
+└── types/
+    ├── types.go           # Core type definitions
+    ├── methods.go         # EVM operations implementation
+    ├── opcodes.go         # Opcode definitions
+    └── state.go           # State management
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## 🔍 Implementation Details
 
-## 🔭 Future Features <a name="future-features"></a>
+### Stack Operations
 
-- [ ] **Implement dashboard to manage content**
-- [ ] **Improved user interface**
+The stack implementation follows EVM specifications:
+* Maximum depth of 1024 items
+* Each item is 32 bytes
+* Automatic overflow checking
+* Panic on stack overflow
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+```go
+func (s *Stack) Push(data byte) {
+    if len(s.Data) >= int(MaximumDepth) {
+        panic("stack overflow")
+    }
+    s.Data = append(s.Data, data)
+}
+```
 
-## 🤝 Contributing <a name="contributing"></a>
+### Memory Management
 
-Contributions, issues, and feature requests are welcome!
+Memory is managed in 32-byte words:
+* Dynamic expansion
+* Gas cost calculation for expansion
+* Automatic alignment
+* Bounds checking on access
 
-Feel free to check the [issues page](../../issues/).
+### Gas Calculation
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Gas costs are implemented according to the Ethereum Yellow Paper:
+* Basic operations: 3 gas
+* Memory expansion: dynamic cost
+* Storage operations: high cost
+* Complex operations: variable cost
 
-## ⭐️ Show your support <a name="support"></a>
+## 🤝 Contributing
 
-If you like this project then don't forget to give star ⭐ to this repository.
+We welcome contributions! Please follow these steps:
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to your branch
+5. Create a Pull Request
 
-## 🙏 Acknowledgments <a name="acknowledgements"></a>
+Please ensure your code:
+* Follows Go best practices
+* Includes tests
+* Is properly documented
+* Passes all existing tests
 
-I would like to thank Blockfuse Labs for the technical support provided to work on this project
+## 🛣️ Roadmap
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+### Q1 2025
+- [ ] Complete implementation of arithmetic operations
+- [ ] Add comprehensive testing suite
+- [ ] Implement memory expansion with proper gas calculation
 
-## 📝 License <a name="license"></a>
+### Q2 2025
+- [ ] Add contract creation capabilities
+- [ ] Implement call operations
+- [ ] Add event logging system
 
-This project is [MIT](./LICENSE) licensed.
+### Q3 2025
+- [ ] Implement remaining EVM opcodes
+- [ ] Add advanced debugging features
+- [ ] Performance optimizations
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
