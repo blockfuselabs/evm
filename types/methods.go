@@ -21,7 +21,16 @@ func (s *Stack) Pop() byte {
 	return lastItem
 }
 
-func (m *Memory) Store(offset byte, value Byte32) {
+func (m *Memory) Store(evm *State) {
+	// push offset to top of stack
+	evm.PUSH1()
+	
+	// push value to top of stack
+	evm.PUSH1()
+
+	value := evm.Stack.Pop()
+	offset := evm.Stack.Pop()
+
 	index := int(offset) / 32
 
 	if index >= len(m.Data) {
@@ -30,7 +39,10 @@ func (m *Memory) Store(offset byte, value Byte32) {
 		m.Data = newMemoryData
 	}
 
-	m.Data[index] = value
+	var valueToByte32 Byte32
+	valueToByte32[31] = byte(value)
+
+	m.Data[index] = valueToByte32
 }
 
 func (m *Memory) Load(offset byte) Byte32 {
@@ -102,6 +114,20 @@ func (evm *State) Div() {
 	evm.Stack.Push(result)
 }
 
+func (evm *State) PUSH1() {
+	// get value to push to stack
+	nextOp := evm.Program[evm.Pc+1]
+
+	// push value to stack
+	evm.Stack.Push(nextOp)
+
+	// push1 implements pc increment by 2(skip value to next op)
+	evm.Pc += 2
+
+	// deduct gas
+	evm.GasDec(3)
+}
+
 // ---------------------------------------------------------
 func (evm *State) Peek() uint8 {
 	return evm.Program[evm.Pc]
@@ -109,10 +135,15 @@ func (evm *State) Peek() uint8 {
 
 func (evm *State) GasDec(amount uint64) {
 	if evm.Gas < amount {
-		panic("Insufficient Gas for execution")
+		evm.Revert("Insufficient Gas")
 	} else {
 		evm.Gas -= amount
 	}
+}
+
+func (evm *State) Revert(reason string) error {
+	evm.Reset()
+	return fmt.Errorf("REVERTED WITH ERROR: %s", reason)
 }
 
 func (evm *State) Stop() {
@@ -147,14 +178,24 @@ func (evm *State) Run() {
 		case ADD:
 			evm.Add()
 			evm.Pc++
+
 			continue
 		case PUSH1:
-			nextOp := evm.Program[evm.Pc+1]
-			evm.Stack.Push(nextOp)
-			evm.Pc += 2
+			evm.PUSH1()
+
 			continue
+		case MSTORE:
+			evm.Memory.Store(evm)
+
+			continue
+		case REVERT:
+			evm.RevertFlag = true
+			evm.Reset()
+
+			break
 		case STOP:
 			evm.Stop()
+
 			break
 		default:
 			fmt.Println("invalid opcode", op)
