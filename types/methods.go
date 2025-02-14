@@ -15,7 +15,6 @@ func (s *Stack) Push(data byte) {
 func (s *Stack) Pop() byte {
 	lastIndex := len(s.Data) - 1
 	lastItem := s.Data[lastIndex]
-	fmt.Println("popped: ", lastItem)
 	s.Data = append(s.Data[:lastIndex], s.Data[lastIndex+1:]...)
 
 	return lastItem
@@ -62,14 +61,11 @@ func (evm *State) Add() {
 	a := evm.Stack.Pop()
 	b := evm.Stack.Pop()
 
-	fmt.Println("adding...", a, "+", b)
 	result := a + b
 
 	evm.Stack.Push(byte(result))
-
-	fmt.Printf("EVM STACK: %v\n", evm.Stack.Data[0])
 	evm.GasDec(3)
-	fmt.Printf("EVM Gas used for ADD Op: [%d]GAS, remaining %d\n", 3, evm.Gas)
+	evm.Pc++
 }
 
 func (evm *State) Sub() {
@@ -78,6 +74,7 @@ func (evm *State) Sub() {
 
 	result := a - b
 	evm.Stack.Push(result)
+	evm.GasDec(3)
 }
 
 func (evm *State) Mul() {
@@ -86,6 +83,7 @@ func (evm *State) Mul() {
 
 	result := a * b
 	evm.Stack.Push(result)
+	evm.GasDec(5)
 }
 
 func (evm *State) Div() {
@@ -100,6 +98,14 @@ func (evm *State) Div() {
 
 	result := a / b
 	evm.Stack.Push(result)
+	evm.GasDec(5)
+}
+
+func (evm *State) PUSH1() {
+	nextOp := evm.Program[evm.Pc+1]
+	evm.Stack.Push(nextOp)
+	evm.Pc += 2
+	evm.GasDec(3)
 }
 
 // ---------------------------------------------------------
@@ -146,15 +152,15 @@ func (evm *State) Run() {
 		switch op {
 		case ADD:
 			evm.Add()
-			evm.Pc++
+
 			continue
 		case PUSH1:
-			nextOp := evm.Program[evm.Pc+1]
-			evm.Stack.Push(nextOp)
-			evm.Pc += 2
+			evm.PUSH1()
+
 			continue
 		case STOP:
 			evm.Stop()
+
 			break
 		default:
 			fmt.Println("invalid opcode", op)
